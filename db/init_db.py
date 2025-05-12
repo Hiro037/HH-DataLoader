@@ -13,7 +13,7 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 def create_database():
-    # Сначала подключаемся к системной БД postgres (где можно создавать другие БД)
+    """Создает базу данных, если она ещё не существует."""
     conn = psycopg2.connect(
         dbname="postgres",
         user=DB_USER,
@@ -37,7 +37,7 @@ def create_database():
     conn.close()
 
 def create_tables():
-    # Подключаемся к нашей новой БД
+    """Создает таблицы `employers` и `vacancies` в базе данных."""
     conn = psycopg2.connect(
         dbname=DB_NAME,
         user=DB_USER,
@@ -53,7 +53,6 @@ def create_tables():
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             url TEXT NOT NULL,
-            description TEXT,
             open_vacancies INTEGER
         );
     """)
@@ -79,6 +78,7 @@ def create_tables():
     print("Таблицы успешно созданы.")
 
 def refresh_tables():
+    """Очищает данные из таблиц `employers` и `vacancies`."""
     conn = psycopg2.connect(
         dbname=DB_NAME,
         user=DB_USER,
@@ -97,7 +97,22 @@ def refresh_tables():
     conn.close()
     print("Данные из таблиц удалены.")
 
-if __name__ == "__main__":
-    #create_database()
-    #create_tables()
-    #refresh_tables()
+def delete_tables():
+    """Удаляет таблицы `employers` и `vacancies`."""
+    conn = psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+    cur = conn.cursor()
+
+    cur.execute("""
+            DROP TABLE employers, vacancies CASCADE;
+        """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("Таблицы удалены.")
